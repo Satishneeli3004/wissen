@@ -1,0 +1,97 @@
+server:
+  port: 802
+quartz:
+  enabled: true
+spring:
+  profiles:
+    active: dev
+  quartz:
+    #相关属性配置
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: jesimsScheduler
+            instanceId: AUTO
+          jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+            tablePrefix: QRTZ_
+            isClustered: true
+            clusterCheckinInterval: 10000
+            useProperties: false
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool
+            threadCount: 50
+            threadPriority: 5
+            threadsInheritContextClassLoaderOfInitializingThread: true
+    #数据库方式
+    job-store-type: jdbc
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      auto-commit: true
+      connection-timeout: 30000
+      idle-timeout: 25000
+      login-timeout: 5
+      max-lifetime: 30000
+      read-only: false
+      validation-timeout: 3000
+      maximum-pool-size: 15
+      minimum-idle: 10
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+        useLocalSessionState: true
+        rewriteBatchedStatements: true
+        cacheResultSetMetadata: true
+        cacheServerConfiguration: true
+        elideSetAutoCommits: true
+        maintainTimeStats: false
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+# mybatis plus
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  typeEnumsPackage: com.baomidou.mybatisplus.core.enums
+  global-config:
+    banner: false
+    db-config:
+      # 主键类型
+      id-type: id_worker_str
+      # 字段验证策略
+      select-strategy: not_empty
+      # 逻辑已删除值(默认为 1)
+      logic-delete-value: 0
+      # 逻辑未删除值(默认为 0)
+      logic-not-delete-value: 1
+  configuration:
+    default-enum-type-handler: com.baomidou.mybatisplus.extension.handlers.MybatisEnumTypeHandler
+
+jesims:
+  security:
+    ignoring:
+      - /assets/**
+      - /components/**
+      - /json/**
+      - /index.html
+      - /side-more.html
+      - /login.html
+      - /social/**
+      - /favicon.ico
+      - /test/**
+      - /swagger-ui.html
+      - /webjars/**
+      - /swagger-resources/**
+      - /v2/**
+      - /csrf/**
+    socialClientId: web
+logging:
+  level:
+    org.quartz: info

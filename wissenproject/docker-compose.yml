@@ -1,0 +1,9 @@
+version: '3'
+services:
+  jesims-security:
+    build:
+      context: ./
+    image: jesims-security
+    ports:
+      - 80:80
+    command: --spring.profiles.active=dev

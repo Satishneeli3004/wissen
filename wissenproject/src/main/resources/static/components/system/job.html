@@ -1,0 +1,255 @@
+<style type="text/css">
+    #modelJobForm .layui-form-label {
+        width: 100px;
+    }
+
+    #modelJobForm .layui-input-block {
+        margin-left: 130px;
+    }
+
+</style>
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <button perm-show="job:add" id="btnAddJob" class="layui-btn icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="tableJob" lay-filter="tableJob"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="modelJob">
+    <form id="modelJobForm" lay-filter="modelJobForm" class="layui-form model-form layui-row">
+        <input name="jobId" type="hidden"/>
+        <div class="layui-row">
+            <div class="layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">任务名称:</label>
+                    <div class="layui-input-block">
+                        <input name="jobName" type="text" class="layui-input" maxlength="20"
+                               lay-verType="tips" lay-verify="required" required/>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">任务组名:</label>
+                    <div class="layui-input-block">
+                        <input name="jobGroup" type="text" class="layui-input" maxlength="20"
+                               lay-verType="tips" lay-verify="required" required/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <div class="layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">类型:</label>
+                    <div class="layui-input-block">
+                        <select name="jobType" lay-verType="tips" lay-verify="required">
+                            <option value="1">java类</option>
+                            <option value="2">spring bean名称</option>
+                            <option value="3">rest调用</option>
+                            <option value="4">jar调用</option>
+                            <option value="9">其他</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">执行路径:</label>
+                    <div class="layui-input-block">
+                        <input name="executePath" type="text" class="layui-input" lay-verType="tips"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <div class="layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">执行文件:</label>
+                    <div class="layui-input-block">
+                        <input name="className" type="text" class="layui-input" lay-verType="tips" lay-verify="required" required/>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">执行方法:</label>
+                    <div class="layui-input-block">
+                        <input name="methodName" type="text" class="layui-input" lay-verType="tips"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <div class="layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">cron表达式:</label>
+                    <div class="layui-input-block">
+                        <input name="cronExpression" type="text" class="layui-input" lay-verType="tips"/>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">错失执行策略:</label>
+                    <div class="layui-input-block">
+                        <select name="misfirePolicy" lay-verType="tips" lay-verify="required" required>
+                            <option value="1">错失周期立即执行</option>
+                            <option value="2">错失周期执行一次</option>
+                            <option value="3">下周期执行</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <div class="layui-col-md12">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">执行参数值:</label>
+                    <div class="layui-input-block">
+                        <textarea name="methodParamsValue" placeholder="执行参数值" class="layui-textarea" maxlength="200"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <div class="layui-col-md12">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">备注信息:</label>
+                    <div class="layui-input-block">
+                        <textarea name="remark" placeholder="备注信息" class="layui-textarea" maxlength="200"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+            <button class="layui-btn" lay-filter="modelSubmitJob" lay-submit>保存</button>
+        </div>
+    </form>
+</script>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="tableBarJob">
+    {{# if(d.jobStatus == 2){ }}
+    <a perm-show="job:edit" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="shutdownJob">暂停</a>
+    {{# } else{ }}
+    <a perm-show="job:edit" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="startJob">启动</a>
+    <a perm-show="job:edit" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="runOne">执行一次</a>
+    <a perm-show="job:edit" class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    {{# } }}
+    {{# if(d.jobStatus != 2){ }}
+    <a perm-show="job:del" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    {{# } }}
+</script>
+
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'laydate', 'admin'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var laydate = layui.laydate;
+        var config = layui.config;
+
+        // 渲染表格
+        var insTb = table.render({
+            elem: '#tableJob',
+            url: config.base_server + '/sys-job/page',
+            page: true,
+            title: '定时任务',
+            cellMinWidth: 100,
+            headers: {
+                Authorization: config.getAccessToken(true)
+            },
+            cols: [[
+                {type: 'numbers', title: '#'},
+                {field: 'jobName', sort: true, title: '任务名称'},
+                {field: 'jobType', sort: true, title: '类型'},
+                {field: 'className', sort: true, title: '类名'},
+                {field: 'methodName', sort: true, title: '方法名'},
+                {field: 'cronExpression', sort: true, title: 'cron表达式'},
+                {
+                    field: 'jobStatus', templet: function (d) {
+                        var status = {0: "未发布", 1: "已发布", 2: "运行中", 3: "暂停", 4: "删除"}
+                        return status[d.jobStatus];
+                    }, title: '状态'
+                },
+                {align: 'center', toolbar: '#tableBarJob', title: '操作', minWidth: 300}
+            ]],
+            done: function () {
+                admin.renderPerm();
+            }
+        });
+
+        // 工具条点击事件
+        table.on('tool(tableJob)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+            if (layEvent === 'edit') { // 修改
+                showEditModel(data);
+            } else if (layEvent === 'startJob') {
+                updateStatus("/sys-job/start-job/" + data.jobId);
+            } else if (layEvent === 'shutdownJob') {
+                updateStatus("/sys-job/shutdown-job/" + data.jobId);
+            } else if (layEvent === 'del') {
+                updateStatus("/sys-job/" + data.jobId, "delete");
+            } else if (layEvent === 'runOne') {
+                updateStatus("/sys-job/run-job/" + data.jobId);
+            }
+        });
+
+        function updateStatus(url,method) {
+            layer.load(2);
+            admin.req(url, {}, function (res) {
+                layer.closeAll('loading');
+                layer.msg(res.msg, {icon: 1});
+                insTb.reload({}, 'data');
+            }, method || "post");
+        }
+
+        // 添加
+        $('#btnAddJob').click(function () {
+            showEditModel();
+        });
+
+        // 显示编辑弹窗
+        function showEditModel(mJob) {
+            admin.open({
+                type: 1,
+                title: (mJob ? '修改' : '添加') + '定时任务',
+                area: '670px',
+                content: $('#modelJob').html(),
+                success: function (layero, dIndex) {
+                    form.val('modelJobForm', mJob);  // 回显数据
+                    // 表单提交事件
+                    form.on('submit(modelSubmitJob)', function (data) {
+                        layer.load(2);
+                        admin.req("/sys-job", data.field, function (res) {
+                            layer.closeAll('loading');
+                            layer.close(dIndex);
+                            layer.msg(res.msg, {icon: 1});
+                            insTb.reload({}, 'data');
+                        }, mJob ? "put" : "post");
+                        return false;
+                    });
+                }
+            });
+        }
+
+    });
+</script>

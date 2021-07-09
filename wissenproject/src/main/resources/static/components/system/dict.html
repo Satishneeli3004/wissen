@@ -1,0 +1,186 @@
+﻿<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label w-auto">描述：</label>
+                        <div class="layui-input-inline mr0">
+                            <input class="layui-input" name="description" placeholder="输入关键字" type="text"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label w-auto">类型：</label>
+                        <div class="layui-input-inline mr0">
+                            <input class="layui-input" name="type" placeholder="输入关键字" type="text"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label w-auto">标签名：</label>
+                        <div class="layui-input-inline mr0">
+                            <input class="layui-input" name="label" placeholder="标签名" type="text"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn icon-btn" lay-filter="formSubSearchDict" lay-submit>
+                            <i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+                        <button class="layui-btn icon-btn" id="btnAddDict" perm-show="dict:add"><i class="layui-icon">&#xe654;</i>添加
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="tableDict" lay-filter="tableDict"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script id="tableBarDict" type="text/html">
+    <a perm-show="dict:edit" class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    <a perm-show="dict:del" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<!-- 表单弹窗 -->
+<script id="modelDict" type="text/html">
+    <form id="modelDictForm" lay-filter="modelDictForm" class="layui-form model-form">
+        <input name="id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label">类型</label>
+            <div class="layui-input-block">
+                <input name="type" placeholder="请输入类型" type="text" class="layui-input" maxlength="20"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">标签名</label>
+            <div class="layui-input-block">
+                <input name="label" placeholder="标签名" type="text" class="layui-input" maxlength="20"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">描述</label>
+            <div class="layui-input-block">
+                <input name="description" placeholder="描述" type="text" class="layui-input" maxlength="20"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">数据值</label>
+            <div class="layui-input-block">
+                <input name="value" placeholder="数据值" type="text" class="layui-input" maxlength="20"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">排序</label>
+            <div class="layui-input-block">
+                <input name="sort" placeholder="排序" value="10" type="number" class="layui-input" maxlength="20"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+            <button class="layui-btn" lay-filter="modelSubmitDict" lay-submit>保存</button>
+        </div>
+    </form>
+</script>
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'admin', 'zTree'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var config = layui.config;
+
+        // 渲染表格
+        var insTb = table.render({
+            elem: '#tableDict',
+            url: config.base_server + '/dict/page',
+            page: true,
+            cellMinWidth: 100,
+            cols: [[
+                {type: 'numbers'},
+                {field: 'type', sort: true, title: '类型'},
+                {field: 'label', sort: true, title: '标签名'},
+                {field: 'description', sort: true, title: '描述'},
+                {field: 'value', sort: true, title: '数据值'},
+                {field: 'sort', sort: true, title: '排序'},
+                {align: 'center', toolbar: '#tableBarDict', title: '操作', minWidth: 200}
+            ]],
+            done: function () {
+                admin.renderPerm();
+            }
+        });
+
+        //监听排序事件
+        table.on('sort(tableDict)', function (obj) {
+            admin.renderPerm();
+        });
+
+        // 添加
+        $('#btnAddDict').click(function () {
+            showEditModel();
+        });
+
+        // 搜索
+        form.on('submit(formSubSearchDict)', function (data) {
+            insTb.reload({where: data.field, page: {curr: 1}}, 'data');
+        });
+
+        // 工具条点击事件
+        table.on('tool(tableDict)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+            if (layEvent === 'edit') { // 修改
+                showEditModel(data);
+            } else if (layEvent === 'del') { // 删除
+                doDel(obj);
+            }
+        });
+
+        // 删除
+        function doDel(obj) {
+            layer.confirm('确定要删除“' + obj.data.description + '”字段数据吗？', {
+                skin: 'layui-layer-admin',
+                shade: .1
+            }, function (i) {
+                layer.close(i);
+                layer.load(2);
+                admin.req('/dict/' + obj.data.id, {}, function (res) {
+                    layer.closeAll('loading');
+                    layer.msg(res.msg, {icon: 1});
+                    insTb.reload({}, 'data');
+                }, 'delete');
+            });
+        }
+
+        // 显示编辑弹窗
+        function showEditModel(mDict) {
+            admin.open({
+                type: 1,
+                title: (mDict ? '修改' : '添加') + '字段数据',
+                content: $('#modelDict').html(),
+                success: function (layero, dIndex) {
+                    form.val('modelDictForm', mDict);  // 回显数据
+                    // 表单提交事件
+                    form.on('submit(modelSubmitDict)', function (data) {
+                        layer.load(2);
+                        admin.req(mDict ? "/dict/" + mDict.id : "/dict", data.field, function (res) {
+                            layer.closeAll('loading');
+                            layer.close(dIndex);
+                            layer.msg(res.msg, {icon: 1});
+                            insTb.reload({}, 'data');
+                        }, mDict ? "put" : "post");
+                        return false;
+                    });
+                }
+            });
+        }
+    });
+</script>
